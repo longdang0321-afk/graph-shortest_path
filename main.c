@@ -10,15 +10,15 @@
 
 void generateGraph(int graph[V][V])
 {
-    int i, j, u, v, w;
+    int j, u, v, w;
     int count = 0;
 
-    for (i = 0; i < V; i++)
+    for (int i = 0; i < V; i++)
         for (j = 0; j < V; j++)
             graph[i][j] = 0;
 
     /* 각 정점을 앞의 정점 중 하나와 연결하여 연결성을 보장한다. */
-    for (v = 1; v < V; v++)
+    for (int v = 1; v < V; v++)
     {
         u = rand() % v;
         w = rand() % 100 + 1;
@@ -124,6 +124,38 @@ void printShortestPaths(int dist[V][V], int next[V][V])
     printf("Total vertex pairs : %d\n", count);
 }
 
+void verifyPaths(int graph[V][V], int dist[V][V], int next[V][V])
+{
+    int u, v, cur, nxt, sum, steps;
+    int ok = 0, total = 0;
+
+    for (u = 0; u < V; u++)
+    {
+        for (v = u + 1; v < V; v++)
+        {
+            total++;
+            sum = 0;
+            steps = 0;
+            cur = u;
+            while (cur != v && steps < V) /* 순환 방지 */
+            {
+                nxt = next[cur][v];
+                if (nxt == -1 || graph[cur][nxt] == 0) /* 존재하지 않는 간선 */
+                    break;
+                sum += graph[cur][nxt];
+                cur = nxt;
+                steps++;
+            }
+            if (cur == v && sum == dist[u][v])
+                ok++;
+            else
+                printf("MISMATCH: %d -> %d (path sum %d, dist %d)\n",
+                       u, v, sum, dist[u][v]);
+        }
+    }
+    printf("Verified : %d/%d pairs OK\n", ok, total);
+}
+
 int main(int argc, char *argv[])
 {
     int graph[V][V], dist[V][V], next[V][V];
@@ -155,5 +187,6 @@ int main(int argc, char *argv[])
     printGraph(graph);
     floydWarshall(graph, dist, next);
     printShortestPaths(dist, next);
+    verifyPaths(graph, dist, next);
     return 0;
 }
